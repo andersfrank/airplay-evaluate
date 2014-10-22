@@ -45,53 +45,127 @@
     
 }
 
+//- (void)viewDidAppear:(BOOL)animated {
+//    [super viewDidAppear:animated];
+//    
+//
+//    NSTimeInterval commercialBreakTime = 10;
+//    
+//    AVPlayerItem *mainStreamItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kMainStreamPath]];
+//    AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
+//    
+//    self.playerView.player = [AVPlayer playerWithPlayerItem:mainStreamItem];
+//    [self.playerView.player play];
+//    
+//    @weakify(self);
+//    
+//    self.disposable = [[[[[[[self.playerView.player periodicTimeObserveWithRefreshInterval:0.5]
+//    
+//    filter:^BOOL(NSNumber *currentTime) {
+//        return currentTime.floatValue > commercialBreakTime;
+//    }]
+//    
+//    take:1]
+//    
+//    delay:0.0]
+//    
+//    // Play commercial
+//    flattenMap:^RACStream *(id value) {
+//        @strongify(self);
+//        [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
+//        return [[self didPlayToEndTimeNotification] take:1];
+//    }]
+//    // Play main stream again
+//    flattenMap:^RACStream *(id value) {
+//        @strongify(self);
+//        [self.playerView.player replaceCurrentItemWithPlayerItem:mainStreamItem];
+//        [self.playerView.player seekToTime:CMTimeMakeWithSeconds(commercialBreakTime, NSEC_PER_SEC)];
+//        [self.playerView.player play];
+//        return [[self didPlayToEndTimeNotification] take:1];
+//    }] subscribeCompleted:^{
+//        @strongify(self);
+//        [self close];
+//    }];
+//    
+//}
+
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
-
+    
     NSTimeInterval commercialBreakTime = 10;
     
     AVPlayerItem *mainStreamItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kMainStreamPath]];
-    AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
+
+    
+
     
     self.playerView.player = [AVPlayer playerWithPlayerItem:mainStreamItem];
     [self.playerView.player play];
+
+
+    [[[RACSignal interval:1 onScheduler:[RACScheduler mainThreadScheduler]] take:1]
+     subscribeNext:^(id x) {
+         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+             AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
+             [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
+         });
+
+     }];
+    
+    
+//    [[[RACSignal return:nil] delay:1] subscribeNext:^(id x) {
+//        NSLog(@"self.playerView.player.currentItem: %@",self.playerView.player.currentItem);
+//        
+//        AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
+//        [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
+//
+    
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            [[adItem.errorLog events] enumerateObjectsUsingBlock:^(AVPlayerItemErrorLogEvent *event, NSUInteger idx, BOOL *stop) {
+//                NSLog(@"comment: %@",event.errorComment);
+//            }];
+//        });
+        
+
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//        [self playAd];
+//        });
+//    }];
     
     @weakify(self);
     
-    self.disposable = [[[[[[[[self.playerView.player periodicTimeObserveWithRefreshInterval:0.5]
-    
-    filter:^BOOL(NSNumber *currentTime) {
-        return currentTime.floatValue > commercialBreakTime;
-    }]
-    
-    take:1] doNext:^(id x) {
-        [self.playerView.player pause];
-        NSLog(@"delaying value: %@",x);
-    }] delay:0.0]
-    // Play commercial
-    flattenMap:^RACStream *(id value) {
-        NSLog(@"value: %@",value);
-        NSLog(@"thread: %d",[NSThread isMainThread]);
-        @strongify(self);
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//            [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
+//    [[[RACSignal return:adItem] delay:10]
+//    subscribeNext:^(AVPlayerItem *item) {
+//        NSLog(@"current thread: %@",[NSThread currentThread]);
+//        @strongify(self);
+//        NSLog(@"item: %@",item);
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            NSLog(@"current thread: %@",[NSThread currentThread]);
+//            [self.playerView.player replaceCurrentItemWithPlayerItem:item];
 //        });
-        [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
-        return [[self didPlayToEndTimeNotification] take:1];
-    }]// delay:1.0]
-    // Play main stream again
-    flattenMap:^RACStream *(id value) {
-        @strongify(self);
-        [self.playerView.player replaceCurrentItemWithPlayerItem:mainStreamItem];
-        [self.playerView.player seekToTime:CMTimeMakeWithSeconds(commercialBreakTime, NSEC_PER_SEC)];
-        [self.playerView.player play];
-        return [[self didPlayToEndTimeNotification] take:1];
-    }] subscribeCompleted:^{
-        @strongify(self);
-        [self close];
+//
+//        NSLog(@"2 item: %@",self.playerView.player.currentItem.asset.debugDescription);
+//    }];
+    
+    [RACObserve(self.playerView.player, status) subscribeNext:^(id x) {
+        NSLog(@"status: %@",x);
     }];
     
+    [RACObserve(self.playerView.player, rate) subscribeNext:^(id x) {
+        NSLog(@"rate: %@",x);
+    }];
+    
+    
+//    AVPlayerStatusUnknown,
+//    AVPlayerStatusReadyToPlay,
+//    AVPlayerStatusFailed
+    
+}
+
+- (void)playAd {
+    AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
+    [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
 }
 
 - (void)didTapCloseButton {
