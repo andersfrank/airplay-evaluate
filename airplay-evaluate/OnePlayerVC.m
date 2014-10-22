@@ -21,7 +21,8 @@
 
 @property (nonatomic) PlayerView *playerView;
 @property (nonatomic) RACDisposable *disposable;
-
+@property (nonatomic) AVPlayerItem *mainStreamItem;
+@property (nonatomic, strong) id token;
 @end
 
 @implementation OnePlayerVC
@@ -41,53 +42,20 @@
     [super viewDidLoad];
     
     [self.view addSubview:self.playerView];
+
+    @weakify(self);
+    [[[NSNotificationCenter.defaultCenter rac_addObserverForName:UIApplicationDidBecomeActiveNotification object:nil] takeUntil:self.rac_willDeallocSignal] subscribeNext:^(id x) {
+        @strongify(self);
+        self.playerView.inBackground = NO;
+    }];
     
+    [[[NSNotificationCenter.defaultCenter rac_addObserverForName:UIApplicationWillResignActiveNotification object:nil] takeUntil:self.rac_willDeallocSignal] subscribeNext:^(id x) {
+        @strongify(self);
+        self.playerView.inBackground = YES;
+    }];
     
 }
 
-//- (void)viewDidAppear:(BOOL)animated {
-//    [super viewDidAppear:animated];
-//    
-//
-//    NSTimeInterval commercialBreakTime = 10;
-//    
-//    AVPlayerItem *mainStreamItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kMainStreamPath]];
-//    AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
-//    
-//    self.playerView.player = [AVPlayer playerWithPlayerItem:mainStreamItem];
-//    [self.playerView.player play];
-//    
-//    @weakify(self);
-//    
-//    self.disposable = [[[[[[[self.playerView.player periodicTimeObserveWithRefreshInterval:0.5]
-//    
-//    filter:^BOOL(NSNumber *currentTime) {
-//        return currentTime.floatValue > commercialBreakTime;
-//    }]
-//    
-//    take:1]
-//    
-//    delay:0.0]
-//    
-//    // Play commercial
-//    flattenMap:^RACStream *(id value) {
-//        @strongify(self);
-//        [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
-//        return [[self didPlayToEndTimeNotification] take:1];
-//    }]
-//    // Play main stream again
-//    flattenMap:^RACStream *(id value) {
-//        @strongify(self);
-//        [self.playerView.player replaceCurrentItemWithPlayerItem:mainStreamItem];
-//        [self.playerView.player seekToTime:CMTimeMakeWithSeconds(commercialBreakTime, NSEC_PER_SEC)];
-//        [self.playerView.player play];
-//        return [[self didPlayToEndTimeNotification] take:1];
-//    }] subscribeCompleted:^{
-//        @strongify(self);
-//        [self close];
-//    }];
-//    
-//}
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
@@ -96,81 +64,94 @@
     NSTimeInterval commercialBreakTime = 10;
     
     AVPlayerItem *mainStreamItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kMainStreamPath]];
-
-    
-
+    AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
     
     self.playerView.player = [AVPlayer playerWithPlayerItem:mainStreamItem];
+    self.playerView.player.usesExternalPlaybackWhileExternalScreenIsActive = YES;
     [self.playerView.player play];
-
-
-    [[[RACSignal interval:1 onScheduler:[RACScheduler mainThreadScheduler]] take:1]
-     subscribeNext:^(id x) {
-         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-             AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
-             [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
-         });
-
-     }];
-    
-    
-//    [[[RACSignal return:nil] delay:1] subscribeNext:^(id x) {
-//        NSLog(@"self.playerView.player.currentItem: %@",self.playerView.player.currentItem);
-//        
-//        AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
-//        [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
-//
-    
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//            [[adItem.errorLog events] enumerateObjectsUsingBlock:^(AVPlayerItemErrorLogEvent *event, NSUInteger idx, BOOL *stop) {
-//                NSLog(@"comment: %@",event.errorComment);
-//            }];
-//        });
-        
-
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//        [self playAd];
-//        });
-//    }];
     
     @weakify(self);
     
-//    [[[RACSignal return:adItem] delay:10]
-//    subscribeNext:^(AVPlayerItem *item) {
-//        NSLog(@"current thread: %@",[NSThread currentThread]);
-//        @strongify(self);
-//        NSLog(@"item: %@",item);
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            NSLog(@"current thread: %@",[NSThread currentThread]);
-//            [self.playerView.player replaceCurrentItemWithPlayerItem:item];
-//        });
-//
-//        NSLog(@"2 item: %@",self.playerView.player.currentItem.asset.debugDescription);
-//    }];
-    
-    [RACObserve(self.playerView.player, status) subscribeNext:^(id x) {
-        NSLog(@"status: %@",x);
+    self.disposable = [[[[self.playerView.player currentTimeEqualsOrExceeded:commercialBreakTime]
+                         
+    // Play commercial
+    flattenMap:^RACStream *(id value) {
+        @strongify(self);
+        self.playerView.player.allowsExternalPlayback = NO;
+        [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
+        self.playerView.player.allowsExternalPlayback = YES;
+        [self.playerView.player play];
+        
+        return [[self didPlayToEndTimeNotification] take:1];
+    }]
+    // Play main stream again
+    flattenMap:^RACStream *(id value) {
+        @strongify(self);
+        self.playerView.player.allowsExternalPlayback = NO;
+        [self.playerView.player replaceCurrentItemWithPlayerItem:mainStreamItem];
+        [self.playerView.player seekToTime:CMTimeMakeWithSeconds(commercialBreakTime, NSEC_PER_SEC)];
+        self.playerView.player.allowsExternalPlayback = YES;
+        [self.playerView.player play];
+        return [[self didPlayToEndTimeNotification] take:1];
+    }]
+                       
+    subscribeCompleted:^{
+        @strongify(self);
+        [self close];
     }];
-    
-    [RACObserve(self.playerView.player, rate) subscribeNext:^(id x) {
-        NSLog(@"rate: %@",x);
-    }];
-    
-    
-//    AVPlayerStatusUnknown,
-//    AVPlayerStatusReadyToPlay,
-//    AVPlayerStatusFailed
     
 }
 
-- (void)playAd {
-    AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
-    [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
-}
+//- (void)viewDidAppear:(BOOL)animated {
+//    [super viewDidAppear:animated];
+//    
+//    
+//    NSTimeInterval commercialBreakTime = 10;
+//    NSTimeInterval commercialPlayTime = 8;
+//    
+//    AVPlayerItem *mainStreamItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kMainStreamPath]];
+//    AVPlayerItem *adItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:kAdPath]];
+//    
+//    self.playerView.player = [AVPlayer playerWithPlayerItem:mainStreamItem];
+//    self.playerView.player.usesExternalPlaybackWhileExternalScreenIsActive = YES;
+//    [self.playerView.player play];
+//    
+//    @weakify(self);
+//    
+//    self.disposable = [[[[self.playerView.player currentTimeEqualsOrExceeded:commercialBreakTime]
+//                      
+//                      // Play commercial
+//                      flattenMap:^RACStream *(id value) {
+//                          @strongify(self);
+//                          self.playerView.player.allowsExternalPlayback = NO;
+//                          [self.playerView.player replaceCurrentItemWithPlayerItem:adItem];
+//                          self.playerView.player.allowsExternalPlayback = YES;
+//                          [self.playerView.player play];
+//                          
+//                          return [self.playerView.player currentTimeEqualsOrExceeded:commercialPlayTime];
+//                         }]
+//                      // Play main stream again
+//                      flattenMap:^RACStream *(NSNumber *currentTime) {
+//                          NSLog(@"currentTime: %@",currentTime);
+//                          @strongify(self);
+//                          self.playerView.player.allowsExternalPlayback = NO;
+//                          [self.playerView.player replaceCurrentItemWithPlayerItem:mainStreamItem];
+//                          [self.playerView.player seekToTime:CMTimeMakeWithSeconds(commercialBreakTime, NSEC_PER_SEC)];
+//                          self.playerView.player.allowsExternalPlayback = YES;
+//                          [self.playerView.player play];
+//                          return [[self didPlayToEndTimeNotification] take:1];
+//                      }] subscribeCompleted:^{
+//                            @strongify(self);
+//                            [self close];
+//                      }];
+//    
+//}
+
 
 - (void)didTapCloseButton {
     [self.disposable dispose];
     [self.playerView.player pause];
+    
     [self close];
 }
 
@@ -187,6 +168,7 @@
     [super viewDidLayoutSubviews];
     self.playerView.frame = self.view.bounds;
 }
+
 
 
 @end

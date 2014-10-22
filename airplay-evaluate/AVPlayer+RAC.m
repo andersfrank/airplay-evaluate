@@ -32,5 +32,11 @@
     
 }
 
+- (RACSignal *)currentTimeEqualsOrExceeded:(CGFloat)time {
+    return [[[self periodicTimeObserveWithRefreshInterval:0.5] filter:^BOOL(NSNumber *currentTime) {
+        return currentTime.floatValue >= time;
+    }] take:1];
+}
+
 
 @end

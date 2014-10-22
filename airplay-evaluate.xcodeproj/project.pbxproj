@@ -11,6 +11,7 @@
 		DA19461D19F6524B0082F431 /* AVPlayer+RAC.m in Sources */ = {isa = PBXBuildFile; fileRef = DA19461C19F6524B0082F431 /* AVPlayer+RAC.m */; };
 		DA19462019F653EF0082F431 /* MenuTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = DA19461F19F653EF0082F431 /* MenuTVC.m */; };
 		DA19462319F67B3F0082F431 /* TwoPlayersVC.m in Sources */ = {isa = PBXBuildFile; fileRef = DA19462219F67B3F0082F431 /* TwoPlayersVC.m */; };
+		DA4D1DED19F7A17700B9D167 /* OnePlayerVC_noRAC.m in Sources */ = {isa = PBXBuildFile; fileRef = DA4D1DEC19F7A17700B9D167 /* OnePlayerVC_noRAC.m */; };
 		DA6EE87319F6472D00D3C8F4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA6EE87219F6472D00D3C8F4 /* main.m */; };
 		DA6EE87619F6472E00D3C8F4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DA6EE87519F6472E00D3C8F4 /* AppDelegate.m */; };
 		DA6EE88119F6472E00D3C8F4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA6EE88019F6472E00D3C8F4 /* Images.xcassets */; };
@@ -42,6 +43,8 @@
 		DA19462119F67B3F0082F431 /* TwoPlayersVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TwoPlayersVC.h; sourceTree = "<group>"; };
 		DA19462219F67B3F0082F431 /* TwoPlayersVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TwoPlayersVC.m; sourceTree = "<group>"; };
 		DA19462419F67DB60082F431 /* Config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
+		DA4D1DEB19F7A17700B9D167 /* OnePlayerVC_noRAC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OnePlayerVC_noRAC.h; sourceTree = "<group>"; };
+		DA4D1DEC19F7A17700B9D167 /* OnePlayerVC_noRAC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OnePlayerVC_noRAC.m; sourceTree = "<group>"; };
 		DA6EE86D19F6472D00D3C8F4 /* airplay-evaluate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "airplay-evaluate.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA6EE87119F6472D00D3C8F4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA6EE87219F6472D00D3C8F4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -122,6 +125,8 @@
 				DA19462219F67B3F0082F431 /* TwoPlayersVC.m */,
 				DA6EE8A119F64BC000D3C8F4 /* OnePlayerVC.h */,
 				DA6EE8A219F64BC000D3C8F4 /* OnePlayerVC.m */,
+				DA4D1DEB19F7A17700B9D167 /* OnePlayerVC_noRAC.h */,
+				DA4D1DEC19F7A17700B9D167 /* OnePlayerVC_noRAC.m */,
 				DA6EE89919F6498100D3C8F4 /* PlayerView.h */,
 				DA6EE89A19F6498100D3C8F4 /* PlayerView.m */,
 				DA6EE88019F6472E00D3C8F4 /* Images.xcassets */,
@@ -305,6 +310,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA4D1DED19F7A17700B9D167 /* OnePlayerVC_noRAC.m in Sources */,
 				DA6EE8A319F64BC000D3C8F4 /* OnePlayerVC.m in Sources */,
 				DA6EE87619F6472E00D3C8F4 /* AppDelegate.m in Sources */,
 				DA6EE89B19F6498100D3C8F4 /* PlayerView.m in Sources */,

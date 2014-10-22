@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>0D7E4233-3708-48F4-B42F-E8D8E9B499CA</string>
+	<key>IDESourceControlProjectName</key>
+	<string>airplay-evaluate</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>7CE19A95003FA9A27BE673AA9FBE1C3060B83F38</key>
+		<string>github.com:andersfrank/airplay-evaluate.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>airplay-evaluate.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>7CE19A95003FA9A27BE673AA9FBE1C3060B83F38</key>
+		<string>..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>github.com:andersfrank/airplay-evaluate.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>7CE19A95003FA9A27BE673AA9FBE1C3060B83F38</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>7CE19A95003FA9A27BE673AA9FBE1C3060B83F38</string>
+			<key>IDESourceControlWCCName</key>
+			<string>airplay-evaluate</string>
+		</dict>
+	</array>
+</dict>
+</plist>

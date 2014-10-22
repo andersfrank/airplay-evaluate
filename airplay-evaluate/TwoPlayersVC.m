@@ -61,43 +61,41 @@
     
     self.mainStreamPlayerView.player = [AVPlayer playerWithPlayerItem:mainStreamItem];
     [self.mainStreamPlayerView.player play];
+    self.mainStreamPlayerView.player.allowsExternalPlayback = YES;
     self.mainStreamPlayerView.alpha = 1;
     
     @weakify(self);
     
-    self.disposable = [[[[[[[[[[self.mainStreamPlayerView.player periodicTimeObserveWithRefreshInterval:0.5]
+    self.disposable = [[[[[[self.mainStreamPlayerView.player periodicTimeObserveWithRefreshInterval:0.5]
     
     filter:^BOOL(NSNumber *currentTime) {
         return currentTime.floatValue > commercialBreakTime;
     }]
     
-    take:1] doNext:^(id x) {
-        NSLog(@"before delay");
-    }]
-                           
-    delay:1.0f] doNext:^(id x) {
-        NSLog(@"after delay");
-    }]
-
+    take:1]
     // Play commercial
     flattenMap:^RACStream *(id value) {
         @strongify(self);
-        
+
+        self.mainStreamPlayerView.player.allowsExternalPlayback = NO;
         self.mainStreamPlayerView.alpha = 0;
         [self.mainStreamPlayerView.player pause];
-        
+
+        self.adPlayerView.player.allowsExternalPlayback = YES;
         self.adPlayerView.alpha = 1;
         self.adPlayerView.player = [AVPlayer playerWithPlayerItem:adItem];
         [self.adPlayerView.player play];
+        
         return [[self didPlayToEndTimeNotification] take:1];
-    }] delay:1.0]
+    }]
     // Play main stream again
     flattenMap:^RACStream *(id value) {
         @strongify(self);
-        
+        self.adPlayerView.player.allowsExternalPlayback = NO;
         self.adPlayerView.alpha = 0;
-        self.adPlayerView.player.rate = 0.0f;
+        [self.adPlayerView.player pause];
         
+        self.mainStreamPlayerView.player.allowsExternalPlayback = YES;
         self.mainStreamPlayerView.alpha = 1;
         [self.mainStreamPlayerView.player play];
 

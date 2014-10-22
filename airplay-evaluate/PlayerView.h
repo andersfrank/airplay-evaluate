@@ -12,6 +12,8 @@
 
 @interface PlayerView : UIView
 
+@property (nonatomic, assign) BOOL inBackground;
+
 @property (nonatomic, strong) AVPlayer *player;
 
 @end

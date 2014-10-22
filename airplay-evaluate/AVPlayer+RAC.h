@@ -10,4 +10,5 @@
 
 @interface AVPlayer (RAC)
 - (RACSignal *)periodicTimeObserveWithRefreshInterval:(CGFloat)refreshInterval;
+- (RACSignal *)currentTimeEqualsOrExceeded:(CGFloat)time;
 @end
